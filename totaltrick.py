@@ -8,7 +8,7 @@ from sklearn import datasets, linear_model
 import itertools
 
 
-amounts_of_missing_features = xrange(1,20)
+amounts_of_missing_features = xrange(1,6,1)
 times = []
 full_accs = []
 naive_accs = []
@@ -33,7 +33,8 @@ for d in amounts_of_missing_features:
 	full_acc = logistic.score(X_test, y_test)
 	print('Full feature set accuracy: %f' % full_acc)
 	full_accs.append(full_acc)
-
+	for i, x in enumerate(X_test):
+		pass
 	# Compute independent probabilities of all possible feature values
 	ind_probs = np.zeros((64, 17))
 	total = len(X_train)
@@ -43,7 +44,6 @@ for d in amounts_of_missing_features:
 
 
 	# Now we randomly set d pixels to -1, which means the value is missing. This value has never been seen in training.
-	d=2
 	for x in X_test:
 		for i in range(0,d):
 			x[random.randint(0,63)]=-1	
@@ -67,11 +67,12 @@ for d in amounts_of_missing_features:
 	# Compute the probability of each class conditioned on all features using the conditional total probability law.
 	test_preds = []
 	valid_values = range(0,17)
-	for x in X_test:
+	nt = len(X_test)
+	for ii, x in enumerate(X_test): 
 		lost_bits = np.where(x==-1)[0]
 		permutations = itertools.product(valid_values, repeat=len(lost_bits))
 		probas = np.zeros((1,10))
-		for perm in permutations:
+		for j, perm in enumerate(permutations):
 			ind_p_prod = 1.	
 			for i, v in enumerate(perm):
 				lost_bit = lost_bits[i]
@@ -79,10 +80,10 @@ for d in amounts_of_missing_features:
 				ind_p_prod *= ind_probs[lost_bit,v]
 			probas += logistic.predict_proba(x)*ind_p_prod
 		test_preds.append(np.argmax(probas))
+		print ii, nt, ii/float(nt)
 	ctpl_acc = accuracy_score(y_test, test_preds)
 	print 'Conditional Total Probability Law computation accuracy: %f' % ctpl_acc
 	ctpl_accs.append(ctpl_acc)
-
 
 plt.plot(amounts_of_missing_features, full_accs, color='black')
 plt.plot(amounts_of_missing_features, naive_accs, color='blue')
