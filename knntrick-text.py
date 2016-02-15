@@ -13,8 +13,7 @@ def evaluate(nbrs, X, m):
     s = time.time()
     indices = None
     for i in range(0,m):
-	Xi = X[i].toarray()[0]
-        indices = nbrs.kneighbors([Xi], return_distance=False)
+        indices = nbrs.kneighbors([X[i].A1], return_distance=False)
     e = time.time()
     return indices, e-s
 
@@ -37,8 +36,8 @@ ns = xrange(100, 1000, 100)
 for n in ns:
 
     dataset = fetch_20newsgroups(subset='all', categories=categories, shuffle=True, random_state=42)
-    vectorizer = TfidfVectorizer(max_df=0.5, max_features=10000, min_df=2, stop_words='english', use_idf=True)
-    X = vectorizer.fit_transform(dataset.data[:n])
+    vectorizer = TfidfVectorizer(max_df=0.5, max_features=10000, min_df=2, stop_words='english', use_idf=True, norm=None)
+    X = vectorizer.fit_transform(dataset.data[:n]).todense()
 
     nbrs = NearestNeighbors(n_neighbors=10, metric='cosine', algorithm='brute')
     indices1, t = evaluate(nbrs,X,m)
