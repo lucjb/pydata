@@ -68,7 +68,7 @@ def selectKth(arr, k):
 	 
 	return arr[k]
  
-if __name__ == '__main__':
+for _ in range(0,3):
     ts1=[]
     ts2 = []
     ts3 = []
