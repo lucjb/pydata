@@ -63,16 +63,22 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import Normalizer
 from sklearn import metrics
-
+from sklearn.metrics import pairwise_distances
 from sklearn.cluster import KMeans, MiniBatchKMeans
+from sklearn.preprocessing import normalize
+from sklearn import random_projection
 
 import logging
 from optparse import OptionParser
 import sys
 from time import time
-
+import matplotlib.pyplot as plt
 import numpy as np
 
+def plot_clusters(X, y):
+	plt.matshow(pairwise_distances(X[np.argsort(y)]))
+	plt.colorbar()
+	plt.show()
 
 # Display progress logs on stdout
 logging.basicConfig(level=logging.INFO,
@@ -132,7 +138,7 @@ print()
 labels = dataset.target
 true_k = np.unique(labels).shape[0]
 
-print("Extracting features from the training dataset using a sparse vectorizer...")
+print("Extracting features from the training dataset using a sparse vectorizer")
 t0 = time()
 if opts.use_hashing:
     if opts.use_idf:
@@ -150,16 +156,13 @@ else:
     vectorizer = TfidfVectorizer(max_df=0.5, max_features=opts.n_features,
                                  min_df=2, stop_words='english',
                                  use_idf=opts.use_idf)
-
-normalizer = Normalizer(copy=False)
-vectorizer_normalizer = make_pipeline(vectorizer, normalizer) 
 X = vectorizer.fit_transform(dataset.data)
-
 
 print("done in %fs" % (time() - t0))
 print("n_samples: %d, n_features: %d" % X.shape)
 print()
 
+'''
 if opts.n_components:
     print("Performing dimensionality reduction using LSA")
     t0 = time()
@@ -167,8 +170,8 @@ if opts.n_components:
     # spherical k-means for better results. Since LSA/SVD results are
     # not normalized, we have to redo the normalization.
     svd = TruncatedSVD(opts.n_components)
-    normalizer = Normalizer(copy=False)
-    #lsa = make_pipeline(svd, normalize)
+    normalizer = Normalizer(copy=True)
+    lsa = make_pipeline(svd, normalizer)
 
     X = lsa.fit_transform(X)
 
@@ -178,6 +181,17 @@ if opts.n_components:
     print("Explained variance of the SVD step: {}%".format(
         int(explained_variance * 100)))
 
+    print()
+'''
+
+if opts.n_components:
+    print("Performing dimensionality reduction using Random Projections")
+    t0 = time()
+    #rp = random_projection.SparseRandomProjection(opts.n_components)
+    rp = random_projection.GaussianRandomProjection(opts.n_components)
+    X = rp.fit_transform(X)
+
+    print("done in %fs" % (time() - t0))
     print()
 
 
@@ -197,6 +211,8 @@ km.fit(X)
 print("done in %0.3fs" % (time() - t0))
 print()
 
+
+
 print("Homogeneity: %0.3f" % metrics.homogeneity_score(labels, km.labels_))
 print("Completeness: %0.3f" % metrics.completeness_score(labels, km.labels_))
 print("V-measure: %0.3f" % metrics.v_measure_score(labels, km.labels_))
@@ -206,6 +222,7 @@ print("Silhouette Coefficient: %0.3f"
       % metrics.silhouette_score(X, km.labels_, sample_size=1000))
 
 print()
+plot_clusters(X, km.labels_)
 
 
 if not opts.use_hashing:
@@ -223,3 +240,7 @@ if not opts.use_hashing:
         for ind in order_centroids[i, :10]:
             print(' %s' % terms[ind], end='')
         print()
+
+
+
+
