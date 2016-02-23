@@ -1,0 +1,48 @@
+kNN: From Slow to Fast using Math
+
+Problem:
+Given a set of objects S find the k nearest neighbours in S for a every posbile object
+Objects are represented by feature vectors
+The similarity function is cosine similarity
+
+Solution
+Compute a feature vector for every objects in S
+When the k nearest neighbours for an object represented by feature vector X is requested
+Compute the cosine similarity of X with every feature vector in S
+Sort by similariy ascending, return the last k elements.
+
+
+Analysis
+Sorting Complexity: O(nlogn)
+Distance evaluation Complexity: O(n)
+Total Time Complexity: AO(nlogn) + BO(n), B>>A ==> O(n) 
+A heap does not help: Distance evaluation complexity is O(nlogk)
+QuickSelect does not help: Distance evaluation complexity is O(n) on avg but O(n**2) worst case.
+
+
+How about a Space PArtitionaing Tree?
+It does not work: cosine similarity is not a metric because it does not hold the triangle inequality.
+
+Math
+
+
+Trick
+Normalize all the feature vectors of S
+Build a KD-Tree using euclidean distance
+When the k nearest neighbours for an object represented by feature vector X is requested
+Normalize X, and look up the k nearest neighbours using the KD-Tree.
+
+Experiments
+
+
+Missing Values in Classification: From bad to good using an old truth
+
+Problem
+
+
+
+
+
+
+
+
