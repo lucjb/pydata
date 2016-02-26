@@ -8,7 +8,7 @@ from sklearn import datasets, linear_model
 import itertools
 
 
-amounts_of_missing_features = xrange(1,6,1)
+amounts_of_missing_features = xrange(1,4,1)
 times = []
 full_accs = []
 naive_accs = []
@@ -33,8 +33,7 @@ for d in amounts_of_missing_features:
 	full_acc = logistic.score(X_test, y_test)
 	print('Full feature set accuracy: %f' % full_acc)
 	full_accs.append(full_acc)
-	for i, x in enumerate(X_test):
-		pass
+
 	# Compute independent probabilities of all possible feature values
 	ind_probs = np.zeros((64, 17))
 	total = len(X_train)
