@@ -20,17 +20,30 @@ A heap does not help: Distance evaluation complexity is O(nlogk)
 QuickSelect does not help: Distance evaluation complexity is O(n) on avg but O(n**2) worst case.
 
 
-How about a Space PArtitionaing Tree?
+How about a Space Partitioning Tree?
 It does not work: cosine similarity is not a metric because it does not hold the triangle inequality.
 
 Math
 
+Cosine distances is invariant under normalization.
+If A and B are unit vectors then the euclidean distance between vector A and B is exatly 2-2cos(A,B)
+
+Consider three vectors, X, A and, B such that:
+1-cos(X, A) > 1-cos(X, B)
+
+1-cos(X/|X|, A/|A|) < 1-cos(X/|X|, B/|B|)
+
+2-2cos(X/|X|, A/|A|) < 2-2cos(X/|X|, B/|B|)
+
+||X/|X|-A/|A||| < ||X/|x|-B/|B|||
+
+eculideansim(X/|X|, B/|B|) > euclideansim(X/|X|,A/|A|)
 
 Trick
 Normalize all the feature vectors of S
-Build a KD-Tree using euclidean distance
+Build a SPT using euclidean distance
 When the k nearest neighbours for an object represented by feature vector X is requested
-Normalize X, and look up the k nearest neighbours using the KD-Tree.
+Normalize X, and look up the k nearest neighbours using the SPT.
 
 Experiments
 
@@ -40,6 +53,57 @@ Missing Values in Classification: From bad to good using an old truth
 Problem
 
 
+
+Clustering: from darkness to light 
+Problem
+Given a set of high dimensional objects and cluster assignements, interpret the clusters by visualizing them.
+
+Solutions
+2D Representation
+Dendogram
+CLustergrams
+
+Analysis
+
+Trick
+Visualize the clusters, 
+
+
+Head tail breaks
+
+Total trick
+
+Situation
+We are bulding a Classifier
+The classifier outputs the Pr(Class|feature 1, feature 2, ..., feature k)
+At prediction time, some features might be missing for some examples
+
+Solutions
+
+Fill in with the most common value
+Fill in with the Expected value
+...
+Build a machine learning algorithm to predict the missing value
+
+Analysis
+All these solutions try to predict the missing value.
+Most of them are too simplisitic or too expensive to build.
+
+
+Math
+A more natural set up of the problem:
+Given a classifier that outputs Pr(Class | feature 1, feature 2, ..., feature k)
+Build a classifier that outputs Pr(Class | feature 1, feature 2, ..., feature i-1, feature i+d, ...feature k)
+
+Conditional Law of Total Probability
+
+Pr(A|C) =  sum over B of Pr(A|B,C)Pr(B)
+
+In our problem:
+Pr(Class | feature 1, feature 2, ..., feature i-1, feature i+d, ...feature k) =
+sum over Pr(Class | feature 1, feature 2, ..., feature k)Pr(feautre i)Pr(feature(i+1) ... Pr(feature i+d-1)
+
+Experiments
 
 
 

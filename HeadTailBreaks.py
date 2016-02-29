@@ -2,11 +2,11 @@ __author__ = 'lbernardi'
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_boston
 import numpy as np
-from sklearn.gaussian_process import GaussianProcess
-from sklearn.cross_validation import cross_val_score, KFold
-from sklearn.cross_validation import cross_val_predict
 from sklearn import linear_model
 from sklearn import cross_validation
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.metrics import mean_squared_error
+
 def htb(data, tails=[]):
     if len(data)==0:
         return tails
@@ -18,8 +18,6 @@ def htb(data, tails=[]):
             head.append((x, size))
         else:
             tail.append((x, size))
-
-    print len(head), len(data)
 
     if len(head)>=len(data)*.5:
         return tails
@@ -36,69 +34,64 @@ def head_tail_breaks(data):
 
     return sorted(breaks)
 
-#2
-boston = load_boston()
-
-X_train, X_test, y_train, y_test = cross_validation.train_test_split(boston.data, boston.target, test_size=0.3, random_state=0)
-lr = linear_model.LinearRegression()
-lr.fit(X_train, y_train)
-print lr.score(X_test, y_test)
-
-
-for col in [0,1,2,3,4,5,6,7,8,9,10,11,12]:
-    print col
-    values = sorted(boston.data[:,col], key=lambda x: -x)
-    plt.plot(values)
-    #plt.show()
-
+def head_tail_breaks_encode(X, col):
+    values = sorted(X[:,col], reverse=True)
     rank_size = zip(range(0,len(values)), values)
     breaks = head_tail_breaks(rank_size)
-    print breaks
-    digitized_crime_rate = np.digitize(values, bins=breaks)
-    digitized_crime_rate = digitized_crime_rate.reshape((-1,1))
-    print digitized_crime_rate
-    from sklearn.preprocessing import OneHotEncoder
+    digitized_values = np.digitize(values, bins=breaks)
+    digitized_values = digitized_values.reshape((-1,1))
     enc = OneHotEncoder(sparse=False)
-    ohe_crime_rate =  enc.fit_transform(digitized_crime_rate)
-    plt.hist(values, bins=breaks)
-    #plt.show()
-    #boston.data = np.delete(boston.data, col, axis=1)
-    boston.data = np.append(boston.data, ohe_crime_rate, axis=1)
-    print boston.data.shape
+    ohe_values =  enc.fit_transform(digitized_values)
+    X_new = np.append(X, ohe_values, axis=1)
+    return X_new
 
+boston = load_boston()
 
-X_train, X_test, y_train, y_test = cross_validation.train_test_split(boston.data, boston.target, test_size=0.3, random_state=0)
+X, y = boston.data, boston.target
+
+X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.3, random_state=0)
 lr = linear_model.LinearRegression()
 lr.fit(X_train, y_train)
 print lr.score(X_test, y_test)
+plain_rmse = mean_squared_error(y_test, lr.predict(X_test))
+print plain_rmse
 
 
+boston = load_boston()
+X, y = boston.data, boston.target
+
+selected = []
+baseline_rmse = plain_rmse
+
+for col, fn in enumerate(boston.feature_names):
+    X_new = head_tail_breaks_encode(X, col)
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X_new, y, test_size=0.3, random_state=0)
+    lr = linear_model.LinearRegression()
+    lr.fit(X_train, y_train)   
+    rmse = mean_squared_error(y_test, lr.predict(X_test))
+    r = lr.score(X_test, y_test)
+    if rmse < baseline_rmse:
+	print fn, rmse, r
+	baseline_rmse = rmse
+    	values = sorted(X[:,col], reverse=True)
+	plt.plot(range(0,len(values)), values)
+	plt.show()
+	selected.append(col)
+    
+
+print '='*70
+boston = load_boston()
+X, y = boston.data, boston.target
+
+for col in selected:
+    X = head_tail_breaks_encode(X, col)    
 
 
-
-
-
-
-
-data = []
-
-
-
-input = open('bw_freq.tsv')
-for line in input:
-    row = line.split('\t')
-    x = row[0]
-    size = float(row[1])
-    data.append((x,size))
-
-data.sort(key= lambda e: -int(e[1]))
-print data
-print '='*80
-x,y = zip(*data)
-plt.plot(y)
-
-head_tail_breaks(data)
-
-
-plt.show()
+X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.3, random_state=0)
+lr = linear_model.LinearRegression()
+lr.fit(X_train, y_train)   
+rmse = mean_squared_error(y_test, lr.predict(X_test))
+r = lr.score(X_test, y_test)
+print rmse, r
+print 'Improvement: %f%%' % ((1-rmse/plain_rmse)*100)
 

@@ -42,13 +42,13 @@ from sklearn.metrics import pairwise_distances
 np.random.seed(42)
 
 digits = load_digits()
-data = scale(digits.data)
 
+data = digits.data
 n_samples, n_features = data.shape
 n_digits = len(np.unique(digits.target))
 labels = digits.target
 
-sample_size = 300
+sample_size = 3000
 
 print("n_digits: %d, \t n_samples %d, \t n_features %d"
       % (n_digits, n_samples, n_features))
@@ -59,16 +59,41 @@ print('% 9s' % 'init'
       '    time  inertia    homo   compl  v-meas     ARI AMI  silhouette')
 
 
+def grayify_cmap(cmap):
+    """Return a grayscale version of the colormap"""
+    cmap = plt.cm.get_cmap(cmap)
+    colors = cmap(np.arange(cmap.N))
+    
+    # convert RGBA to perceived greyscale luminance
+    # cf. http://alienryderflex.com/hsp.html
+    RGB_weight = [0.299, 0.587, 0.114]
+    luminance = np.sqrt(np.dot(colors[:, :3] ** 2, RGB_weight))
+    colors[:, :3] = luminance[:, np.newaxis]
+    
+    return cmap.from_list(cmap.name + "_grayscale", colors, cmap.N)
+
 def plot_clusters(X, y):
-	plt.matshow(pairwise_distances(X[np.argsort(y)]))
+
+	pd = pairwise_distances(X[np.argsort(y)])
+	plt.figure(1)
+
+	plt.subplot(211)
+	plt.matshow(pd, cmap='hot')
 	plt.colorbar()
+	cm = plt.cm.get_cmap('hot')
+	Y,X = np.histogram(pd.ravel())
+	x_span = X.max()-X.min()
+	C = [cm(((x-X.min())/x_span)) for x in X]
+
+	plt.subplot(212)
+	plt.bar(X[:-1],Y,color=C,width=X[1]-X[0])
 	plt.show()
 
 def bench_k_means(estimator, name, data):
     t0 = time()
     estimator.fit(data)
     print('% 9s   %.2fs    %i   %.3f   %.3f   %.3f   %.3f   %.3f    %.3f'
-          % (name, (time() - t0), estimator.inertia_,
+          % (name, (time() - t0), 2 ,
              metrics.homogeneity_score(labels, estimator.labels_),
              metrics.completeness_score(labels, estimator.labels_),
              metrics.v_measure_score(labels, estimator.labels_),
@@ -79,7 +104,23 @@ def bench_k_means(estimator, name, data):
                                       sample_size=sample_size)))
     plot_clusters(data, estimator.labels_)
 
+from sklearn.cluster import AffinityPropagation
 
+import matplotlib
+a=  matplotlib.cm.ScalarMappable(norm=None, cmap=matplotlib.cm.get_cmap('hot'))
+print a.to_rgba(50)
+
+plt.hist(pairwise_distances(data).ravel())
+plt.show()
+from sklearn.cluster import AgglomerativeClustering
+bench_k_means(AgglomerativeClustering(linkage='average', n_clusters=20), name='Ward', data=data)
+bench_k_means(AgglomerativeClustering(linkage='ward', n_clusters=n_digits), name='Ward', data=data)
+bench_k_means(AgglomerativeClustering(linkage='average', n_clusters=n_digits), name='Avg', data=data)
+bench_k_means(AgglomerativeClustering(linkage='complete', n_clusters=n_digits), name='Complete', data=data)
+
+
+
+#data = scale(digits.data)
 bench_k_means(KMeans(init='k-means++', n_clusters=n_digits, n_init=10),
               name="k-means++", data=data)
 
@@ -94,10 +135,12 @@ bench_k_means(KMeans(init=pca.components_, n_clusters=n_digits, n_init=1),
               data=data)
 
 data = normalize(data)
-data = scale(data)
+#data = scale(data)
 
-bench_k_means(KMeans(init='k-means++', n_clusters=n_digits, n_init=10),
-              name="k-means++", data=data)
+estimator = KMeans(init='k-means++', n_clusters=n_digits, n_init=10)
+bench_k_means(estimator,
+              name="norm k-means++", data=data)
+plot_clusters(data, estimator.labels_)
 
 bench_k_means(KMeans(init='random', n_clusters=n_digits, n_init=10),
               name="random", data=data)
