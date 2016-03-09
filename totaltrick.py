@@ -9,26 +9,27 @@ import itertools
 from sklearn import cross_validation
 from sklearn.utils import shuffle
 
-amounts_of_missing_features = xrange(1,3,1)
+amounts_of_missing_features = xrange(1,5,1)
 times = []
 full_accs = []
 naive_accs = []
 maxp_accs = []
 ctpl_accs =[]
 avgs_accs = []
-pixels = 28*28
-levels = 256
+pixels = 8*8
+levels = 17
 n=2000
 
 for d in amounts_of_missing_features:
 	print d
-	#digits = datasets.load_digits()
-	digits = fetch_mldata("MNIST original")
+	digits = datasets.load_digits()
+	#digits = fetch_mldata("MNIST original")
 	digits.data = digits.data.astype(int)
     	digits.data, digits.target = shuffle(digits.data, digits.target)
 	X = digits.data[:n]
 	y = digits.target[:n]
-
+#	plt.matshow(X[0].reshape((8,8)), cmap=plt.cm.gray_r)
+#	plt.show()
 
 	X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.3, random_state=0)
 
@@ -57,6 +58,8 @@ for d in amounts_of_missing_features:
 		for i in range(0,d):
 			r = random.randint(0,pixels-1)
 			x[r]=-1
+#	plt.matshow(x.reshape((8,8)))
+#	plt.show()
 	naive_acc = logistic.score(X_test, y_test)
 	print('Naive plain prediction accuracy: %f' % naive_acc)
 	naive_accs.append(naive_acc)

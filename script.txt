@@ -87,23 +87,27 @@ Build a machine learning algorithm to predict the missing value
 
 Analysis
 All these solutions try to predict the missing value.
+Some of them are not applicable for categorical data.
 Most of them are too simplisitic or too expensive to build.
 
 
 Math
 A more natural set up of the problem:
-Given a classifier that outputs Pr(Class | feature 1, feature 2, ..., feature k)
-Build a classifier that outputs Pr(Class | feature 1, feature 2, ..., feature i-1, feature i+d, ...feature k)
+Given a classifier that outputs Pr(Class | fa, fb, fc)
+Build a classifier that outputs Pr(Class | fa, fc)
 
 Conditional Law of Total Probability
-
+If C and B are independent then:
 Pr(A|C) =  sum over B of Pr(A|B,C)Pr(B)
 
-In our problem:
-Pr(Class | feature 1, feature 2, ..., feature i-1, feature i+d, ...feature k) =
-sum over Pr(Class | feature 1, feature 2, ..., feature k)Pr(feautre i)Pr(feature(i+1) ... Pr(feature i+d-1)
+Trick
+Assume fa, fb, and fc are all independent from each other.
+Estimate Pr(Class | fa=a1, fc=c7) as
+sum over i Pr(Class | fa=a1, fb=bi, fc=c7)Pr(fb=bi)
 
 Experiments
+
+
 
 
 

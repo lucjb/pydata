@@ -7,15 +7,17 @@ import numpy as np
 from sklearn.utils import shuffle
 
 def evaluate(nbrs, X, m):
-    sf = time.time()#
+    sf = time.time()
     nbrs.fit(X)
-    ef = time.time()#
+    ef = time.time()
     s = time.time()
     indices = []
     for i in range(0,m):
-       indices.extend(nbrs.kneighbors([X[i]], return_distance=False)[0])#
+       knn = nbrs.kneighbors([X[i]], return_distance=False)[0]
+       indices.extend(knn)
     e = time.time()
     return np.array(indices), e-s, ef-sf
+
 
 
 def evaluateAll(nbrs, X, m):
@@ -23,10 +25,49 @@ def evaluateAll(nbrs, X, m):
     s = time.time()
     _,indices = nbrs.kneighbors(X[:m], return_distance=True)
     e = time.time()
+
     return np.array(indices), e-s
 
-m = 20
+def plot_knn(X):
+    f, axarr = plt.subplots(6, 10)	
+    for i in range(0,6):
+       knn = nbrs.kneighbors([X[i]], return_distance=False)[0]
+       r=0
+       for p in knn:
+           axarr[i,r].matshow(X[p].reshape((28,28)))
+           axarr[i,r].set_xticks([])		
+           axarr[i,r].set_yticks([])		
+           r+=1
+    plt.tight_layout()
+    plt.show()
+
+
 k = 10
+mnist = fetch_mldata("MNIST original")
+mnist.data, mnist.target = shuffle(mnist.data, mnist.target)
+plt.matshow(mnist.data[0].reshape((28,28)))
+plt.show()
+
+nbrs = NearestNeighbors(n_neighbors=k, metric='cosine', algorithm='brute')
+nbrs.fit(mnist.data)
+plot_knn(mnist.data)
+
+X=[]
+for x in mnist.data:
+	x = x.astype(float)
+	X.append(x)
+
+new_shape=X[1].shape[0]
+
+for i,x in enumerate(X):
+	X[i] = normalize(x).reshape((new_shape))
+
+nbrs = NearestNeighbors(n_neighbors=10, metric='euclidean', algorithm='ball_tree')
+nbrs.fit(X)
+plot_knn(X)
+
+m = 20
+
 fast = []
 fast2 = []
 slow = []
@@ -35,15 +76,12 @@ fast_fit = []
 fast2_fit = []
 slow_fit = []
 
-s, e, delta = 5000, 40000, 1000
+s, e, delta = 3900, 4000, 100
 ns = xrange(s, e, delta)
-mnist = fetch_mldata("MNIST original")
 
 for n in ns:
     
     mnist.data, mnist.target = shuffle(mnist.data, mnist.target)
-
-    y = mnist.target[:n]
 
     X=[]
     for x in mnist.data[:n]:
