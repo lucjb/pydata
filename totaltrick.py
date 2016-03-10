@@ -58,8 +58,8 @@ for d in amounts_of_missing_features:
 		for i in range(0,d):
 			r = random.randint(0,pixels-1)
 			x[r]=-1
-#	plt.matshow(x.reshape((8,8)))
-#	plt.show()
+	#plt.matshow(x.reshape((8,8)))
+	#plt.show()
 	naive_acc = logistic.score(X_test, y_test)
 	print('Naive plain prediction accuracy: %f' % naive_acc)
 	naive_accs.append(naive_acc)
