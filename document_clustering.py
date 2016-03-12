@@ -76,7 +76,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def plot_clusters(X, y):
-	plt.matshow(pairwise_distances(X[np.argsort(y)]))
+	pd = pairwise_distances(X[np.argsort(y)])
+	plt.matshow(pd)
 	plt.colorbar()
 	plt.show()
 
@@ -162,7 +163,7 @@ print("done in %fs" % (time() - t0))
 print("n_samples: %d, n_features: %d" % X.shape)
 print()
 
-'''
+
 if opts.n_components:
     print("Performing dimensionality reduction using LSA")
     t0 = time()
@@ -181,17 +182,6 @@ if opts.n_components:
     print("Explained variance of the SVD step: {}%".format(
         int(explained_variance * 100)))
 
-    print()
-'''
-
-if opts.n_components:
-    print("Performing dimensionality reduction using Random Projections")
-    t0 = time()
-    #rp = random_projection.SparseRandomProjection(opts.n_components)
-    rp = random_projection.GaussianRandomProjection(opts.n_components)
-    X = rp.fit_transform(X)
-
-    print("done in %fs" % (time() - t0))
     print()
 
 

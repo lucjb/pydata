@@ -59,34 +59,10 @@ print('% 9s' % 'init'
       '    time  inertia    homo   compl  v-meas     ARI AMI  silhouette')
 
 
-def grayify_cmap(cmap):
-    """Return a grayscale version of the colormap"""
-    cmap = plt.cm.get_cmap(cmap)
-    colors = cmap(np.arange(cmap.N))
-    
-    # convert RGBA to perceived greyscale luminance
-    # cf. http://alienryderflex.com/hsp.html
-    RGB_weight = [0.299, 0.587, 0.114]
-    luminance = np.sqrt(np.dot(colors[:, :3] ** 2, RGB_weight))
-    colors[:, :3] = luminance[:, np.newaxis]
-    
-    return cmap.from_list(cmap.name + "_grayscale", colors, cmap.N)
-
 def plot_clusters(X, y):
-
 	pd = pairwise_distances(X[np.argsort(y)])
-	plt.figure(1)
-
-	plt.subplot(211)
 	plt.matshow(pd, cmap='hot')
 	plt.colorbar()
-	cm = plt.cm.get_cmap('hot')
-	Y,X = np.histogram(pd.ravel())
-	x_span = X.max()-X.min()
-	C = [cm(((x-X.min())/x_span)) for x in X]
-
-	plt.subplot(212)
-	plt.bar(X[:-1],Y,color=C,width=X[1]-X[0])
 	plt.show()
 
 def bench_k_means(estimator, name, data):
