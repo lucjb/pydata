@@ -17,7 +17,7 @@ def evaluate(nbrs, X, m):
     e = time.time()
     return indices, e-s
 
-m=10
+m=20
 
 categories = [
     'alt.atheism',

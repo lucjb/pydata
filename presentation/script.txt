@@ -109,6 +109,71 @@ Experiments
 
 
 
+Head Tail Breaks
+Situation
+Problem
+We have data. Every data point is represented by a feature vector.
+There is one specific feature that we want to cluster in to groups.
+AKA: Discretization, Bining, Quantization, 1d-clustering
+
+Solutions
+Quantile Binning
+Jenks Natural Breaks (1d k-means)
+Supervised Methods
+
+Analysis
+Many of these methods take the amount of clusters as input
+Supervised methods are only suitable for specific tasks
+Some methods are not robust to different distribution types
+
+Math
+
+Power Law
+
+Pareto Distribution
+
+Rank Size Distribution
+
+Log-normal Distribution
+
+Given a variable X, if its values x follow a heavy tailed distribution, then the mean of the values can divide all the values into two parts: a high percentage in the tail, and a low percentage in the head.
+
+
+Trick
+
+def head_tail_breaks(data, breaks=[]):
+	n = len(data)
+	m = mean(data)
+	head = [x for x in data if x>m]
+	tail = [x for x in data if x<=m]
+	breaks.append(m)
+	if len(head)<n*0.4 and len(head)>0:
+		return head_tail_breaks(head, breaks)
+	else:
+		return breaks	
+
+Experiment
+
+Predict the price of houses, based on several features
+Apply head tail breaks to every feature
+Discretize the features using the computed breaks
+Use the discretized features in the regression
+
+Results
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
 
 
 
